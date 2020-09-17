@@ -13,7 +13,8 @@ param = 1.15;          % steepness of the modulation (1.05, 1.49, 2, etc.)
 % t // corresponding time vector
 
 %% rise/fall
-[y w] = wav_risefall(y,[5 5],Sf,'lin');
+[y w] = wav_risefall(y,[5 5],Sf,'db'); % hijacked version of this function
+[y w] = wav_risefall(y,[0.01 0.01], Sf, 'lin'); % is this an appropriate amount of rise/fall time?
 
 %% Plot
 plot(t, y)
