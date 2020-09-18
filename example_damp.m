@@ -14,13 +14,14 @@ param = 1.15;          % steepness of the modulation (1.05, 1.49, 2, etc.)
 
 %% rise/fall
 [y w] = wav_risefall(y,[5 5],Sf,'db'); % hijacked version of this function
-[y w] = wav_risefall(y,[0.01 0.01], Sf, 'lin'); % is this an appropriate amount of rise/fall time?
+% [y w] = wav_risefall(y,[0.01 0.01], Sf, 'lin'); % is this an appropriate amount of rise/fall time?
 
 %% Plot
-plot(t, y)
+plot(t, y, t, w)
+% plot(t,y)
 
 %% Listen
-sound(y, Sf)
+% sound(y, Sf)
 
 %% Export audio file
-audiowrite('example_damp.wav',y,Sf)
+% audiowrite('example_damp.wav',y,Sf)
