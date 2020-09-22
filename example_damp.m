@@ -1,3 +1,5 @@
+% Test change for Windows sync confirmation: 2020.09.22
+
 % %% Paths
 % % Path 1: use wav_risefall() with 'lin' and then apply mag2db.
 % % Path 2: apply mag2db inside of wav_risefall().
