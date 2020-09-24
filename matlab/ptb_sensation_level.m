@@ -21,18 +21,25 @@ if nargin < 4, nRep    = 6; end
 if nargin < 3, dbRange = [-120 -40]; end
 if nargin < 2, Sf = 44100; end
 if nargin < 1,
-	sound = sine_tone(12,1000,Sf);
+	sound = sine_tone(12,1000,Sf); % sine_tone() is at the bottom of this script
 	sound = wav_risefall(sound,[0.1 0.1],Sf);
 end
 
 % get sound duration
-sound = sound(:);
-durSound = length(sound)/Sf;
+sound = sound(:); % Transform sound from row to column
+durSound = length(sound)/Sf; % Calculate duration of sound in seconds
 
 % get db multipliers
 dbLin  = linspace(dbRange(1),dbRange(2),length(sound));  % linear spacing between decibels
+% Make line vector from low to high dB with one value for each value in
+% sound
 m_asc  = 10.^(dbLin/20);                                 % ascending multipliers
+% Get the magnitude from the dB vector you just made 
+% ydb = 20*log10(y) -->
+% 10^(ydb/20) = y
 m_des  = 10.^(fliplr(dbLin)/20);                         % descending multipliers
+% Same process of creating magnitude from dB vector, this time flipped to
+% get the descending version.
 db_asc = dbLin;                                          % ascending decibel
 db_des = fliplr(dbLin);                                  % descending decibel
 
@@ -43,19 +50,27 @@ dsound = sound .* m_des';
 % initial params
 PsychDefaultSetup(2);
 InitializePsychSound;
-pahandle = PsychPortAudio('Open',findaudiodevice('Yamaha Steinberg USB ASIO'),[],0,Sf,2);
+% pahandle = PsychPortAudio('Open',findaudiodevice('Yamaha Steinberg USB ASIO'),[],0,Sf,2);
+pahandle = PsychPortAudio('Open',findaudiodevice('TASCAM US-144 MKII'),[],0,Sf,2);
+
 
 KbName('UnifyKeyNames');
+% Tranform internal naming scheme from your computer's operating system to
+% a common naming scheme for all operating systems.
 keysOfInterest = zeros(1,256);
+% Create vector (1 row, 256 columns) of zeros
 keysOfInterest(KbName('ESCAPE')) = 1;
+% Makes the ESCAPE key (#27 on this computer) a 1
 KbQueueCreate;
+% Create queue for default device
 KbQueueStart;
+% Start delivering keyboard events from default device
 
 
 sca;                                             % close all screens
 screens      = Screen('Screens');                % get all screens available
 screenNumber = max(screens);                     % present stuff on the last screen
-Screen('Preference', 'SkipSyncTests', 1);
+Screen('Preference', 'SkipSyncTests', 1);        % Skip the opening warning/test?      
 white        = WhiteIndex(screenNumber);         % get white given the screen used
 
 % play once something to get the time stamps right later
@@ -64,14 +79,18 @@ initialTime = PsychPortAudio('Start',pahandle,1,0,1);
 
 try
 	bgcolor  = 0;                                    % background color 0-255
-	txtcolor = round(white*0.8);                     % text color 0-255
-	[shandle, windowRect] = PsychImaging('OpenWindow', screenNumber, bgcolor); % open window
+	% Background color is black
+    txtcolor = round(white*0.8);                     % text color 0-255
+	% Make text a little greyish?
+    [shandle, windowRect] = PsychImaging('OpenWindow', screenNumber, bgcolor); % open window
 	
 	% Get the center and size of the on screen window
 	[xCenter, yCenter] = RectCenter(windowRect);
 	[screenXpixels, screenYpixels] = Screen('WindowSize', shandle);
 	a_up     = arrow_matrix(100);
+    % Find this function below
 	a_down   = flipud(arrow_matrix(100));
+    % Flip array in an up/down direction.
 	tmp      = [min([screenXpixels screenYpixels]) min([screenXpixels screenYpixels])] * 0.2;
 	DestRect = CenterRectOnPointd([0 0 tmp],xCenter, yCenter);
 	
@@ -88,6 +107,8 @@ try
 	Screen('Flip', shandle);
 	keyIsDown = KbCheck;
 	while ~keyIsDown, keyIsDown = KbCheck; end
+    % Continuous check if key is depressed until one is depressed. Then the
+    % following blank screen and wait.
  	DrawFormattedText(shandle, '', 'center', 'center', txtcolor);
  	Screen('Flip', shandle);
     WaitSecs(1);
@@ -95,14 +116,17 @@ try
     % Instruction screen 2
 	arrows = [a_down zeros(size(a_up)) a_up];
 	arrows = [zeros([size(a_down,1) size(arrows,2)]); arrows; zeros([size(a_down,1) size(arrows,2)])];
-	tmp    = [min([screenXpixels screenYpixels]) min([screenXpixels screenYpixels])] * 0.6;
+	% ? How do the 2 lines above work?
+    tmp    = [min([screenXpixels screenYpixels]) min([screenXpixels screenYpixels])] * 0.6;
 	DRect  = CenterRectOnPointd([0 0 tmp],xCenter, yCenter);
 	tex = Screen('MakeTexture', shandle, arrows);
 	Screen('DrawTextures', shandle, tex, [], DRect, [], [], [], [0 1 0]);
+    % Check out details of Screen DrawTextures? when PTB working.
 	DrawFormattedText(shandle, [['Downward arrow: The sound starts loudly,\npress a button as soon as you cannot hear it anymore!\n\n'] ...
 	                           ['Upward arrow: The sound starts silently,\npress a button as soon as you can hear it!']], 'center', yCenter*0.3+yCenter, txtcolor);
 	DrawFormattedText(shandle, 'Press a button to start!', 'center', yCenter*0.7+yCenter, txtcolor);
 	Screen('Flip', shandle);
+    % Another wait:
 	keyIsDown = KbCheck;
 	while ~keyIsDown, keyIsDown = KbCheck; end
  	DrawFormattedText(shandle, '', 'center', 'center', txtcolor);
@@ -110,6 +134,7 @@ try
 	WaitSecs(2);
 	
 	[Tm Tdb] = deal([]);
+    % Distribute [] to Tm and to Tdb. Like creating them in one step.
  	for rr = 1 : nRep
  		for pp = 1 : 2  % pp = 1 --> descending; pp = 2 --> ascending
 			if pp == 1
@@ -122,6 +147,7 @@ try
 			
 			% check whether program is aborted
 			[~,keyEvents] = KbQueueCheck;
+            % ? ~ for pressed | keyEvents for firstPress? help KbQueueCheck 
 			if keyEvents(logical(keysOfInterest))>0
 				error('Program stopped by user!!!')
 			end
@@ -137,7 +163,8 @@ try
  			[keyIsDown, endtime, keyCode] = KbCheck;
  			while ~keyIsDown && GetSecs-starttime < durSound
  				[keyIsDown, endtime, keyCode] = KbCheck;
- 			end
+            end
+            % ^ While stimulus is playing check/record if key is depressed
 			PsychPortAudio('Stop', pahandle,[],1);
 			DrawFormattedText(shandle, '', 'center', 'center', txtcolor);
 			Screen('Flip', shandle);
@@ -172,6 +199,9 @@ catch
 end
 
 if nnz(isnan(Tm(:))) == length(Tm)
+    % nnz() returns the number of nonzero numbers. If there are NAN
+    % responses for every single Tm entry, then there are 0 valid
+    % responses.
 	error('Error: No valid responses were made! Responses were either too early or too late.')
 	[Tm Tdb] = deal([]);
 elseif nnz(isnan(Tm(:)))/length(Tm) > 0.5
@@ -183,6 +213,7 @@ else
 	Tdb = nanmean(Tdb(:));
 end
 
+% Below are helper functions for ^ 
 
 % get sine tone
 function [y] = sine_tone(dur,Cf,Sf)

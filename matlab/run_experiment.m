@@ -12,8 +12,11 @@ try
     % initial params
     PsychDefaultSetup(2);
     InitializePsychSound;
-    pahandle = PsychPortAudio('Open',ptb_findaudiodevice('ASIO Focusrite'),[],2,Sf,4);
+%     pahandle = PsychPortAudio('Open',ptb_findaudiodevice('ASIO Focusrite'),[],2,Sf,4);
+    pahandle = PsychPortAudio('Open',ptb_findaudiodevice('TASCAM US-144 MKII'),[],2,Sf,4);
+%       pahandle = PsychPortAudio('Open',[],[],2,Sf,4);
 		
+
     KbName('UnifyKeyNames');
     keysOfInterest = zeros(1,256);
     keysOfInterest(KbName('ESCAPE')) = 1;
