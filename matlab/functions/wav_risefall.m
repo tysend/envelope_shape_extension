@@ -50,26 +50,9 @@ elseif strcmp(method, 'tukey')
 	rf_window = tukeywin(nsamp_fall*2, Fs);
 	fall = rf_window(end-nsamp_fall+1:end);
 else strcmp(method, 'db')
-    % create db curve based on mag
-    rise_0 = mag2db(linspace(0,1,nsamp_rise)');
-    fall_0 = mag2db(linspace(1,0,nsamp_fall)');
-    % raise it to the x = 0 line
-    % Test /2 so it doesn't rise as high: the 2 was arbitrary. It didn't do
-    % much either...
-    % Test /4
-    rise_1 = rise_0 + abs(min(rise_0(2:length(rise_0))))/2; % Need to avoid -Inf points
-    fall_1 = fall_0 + abs(min(fall_0(1:length(fall_0)-1)))/2;
-    % normalize from 0:1 
-    rise_2 = rise_1/max(rise_1);
-    fall_2 = fall_1/max(fall_1(1:length(fall_1)-1));
-    % rename the variable
-    rise = rise_2;
-    fall = fall_2;
+    rise = db2mag(linspace(-50,0,nsamp_rise)');
+    fall = db2mag(linspace(0,-50,nsamp_fall)');
 end
-
-% Optional plotting of rise/fall
-% tt = 0:1/Fs:(nsamp_rise-1)/Fs; % "test time" -> tt
-% plot(tt,rise_2,tt,fall_2)
 
 % applied rise and fall vectors to x
 x(1:nsamp_rise) = x(1:nsamp_rise).*rise;
@@ -80,6 +63,4 @@ y = x;
 w(1:nsamp_rise) = w(1:nsamp_rise).*rise;
 w(end-nsamp_fall+1:end) = w(end-nsamp_fall+1:end).*fall;
 
-% Optional plotting: t comes from calling script
-% plot(t,y,t,w)
 return;

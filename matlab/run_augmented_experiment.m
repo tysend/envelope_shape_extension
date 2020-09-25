@@ -1,5 +1,6 @@
-function run_experiment(subjID,startBlock)
-
+function run_augmented_experiment(subjID,startBlock)
+% 2020.09.25
+% Changed to be an extension of Vanessa's project.
 try
 	fs = filesep;
 	
@@ -7,8 +8,9 @@ try
 	Sf     = 44100;
 	SOA    = 5.121; % stimulus onset asynchrony
 	dBSPL  = -10; % corresponding to XX dB SPL
-% 	dBSPL = -1; % Trying this for use on laptop (not for real data collection)
-	N      = 28;
+	N      = 25; % Number of ramps and damps per block
+	% 25 ramp + 25 ramp = 50/block * 6 blocks = 300 trials total, 150 per
+	% condition
 	
 	% initial params
 	PsychDefaultSetup(2);
@@ -85,12 +87,13 @@ try
 				type = 'ramped';
 			end
 			
-			if seq(b).info(2,ii) == 0
-				fR = [900 1800];
-			else
-				fR = [1800 3600];
-			end
-			[y t]    = generate_complex_envel(Sf,4,fR,100,4,type,1.05);
+			% Unlike original experiment, we are using only the high
+			% frequency range.
+			fR = [1800 3600];
+			
+			[y, t] = generate_complex_envel(Sf,10,fR,100,4,type,1.15);
+			[y, w] = wav_risefall(y, [4.5 4.5], Sf, 'db'); % ? Why does this also return a logical? What's being tested here?
+			y = y';
 			y(2,:)   = y;
 			y(3:4,:) = 0;
 			y(3:4,1:round(Sf*0.01)) = 1;
@@ -108,7 +111,7 @@ try
 			end
 			% WaitSecs(size(y)/Sf+0.01);
 			% This ^ was throwing an error: I think because size() does not return single number. Could be fixed. I'm temporarily replacing it with:
-			WaitSecs(4.01);
+			WaitSecs(10.01);
 			% This needs to be slightly longer than the stimulus.
 		end
 		events       = [];

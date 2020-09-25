@@ -14,7 +14,9 @@ addpath(genpath('matlab')) % Adds directory to search path, genpath recursively 
 % https://www.mathworks.com/help/matlab/matlab_env/what-is-the-matlab-search-path.html
 
 % participant ID
-subjID  = 'es01a';
+subjID  = 'es02a';
+% es02a is my complete run through of Vanessa's original on 2020.09.25
+% using computer headphones
 
 
 
@@ -26,6 +28,9 @@ run_SensationLevel(subjID)
 
  
 %% (5) run regularity patterns
-run_experiment(subjID,1) 
+% run_experiment(subjID,1) 
+run_augmented_experiment(subjID,1);
+% ^ Augmented version is the extension of Vanessa's project. It has the dB
+% filter overlaying the ramp/damp.
 
 
