@@ -19,10 +19,10 @@ try
 	% pahandle = PsychPortAudio('Open',ptb_findaudiodevice('TASCAM US-144 MKII'),[],2,Sf,4);
 	% pahandle = PsychPortAudio('Open',[],[],2,Sf,4);
 	% pahandle = PsychPortAudio('Open', ptb_findaudiodevice('US-122 MKII / US-144 MKII'), [], 2, Sf, 4);_
-% 	pahandle = PsychPortAudio('Open', 13, [], 2, Sf, 4); % 13 == ^
+	pahandle = PsychPortAudio('Open', 13, [], 2, Sf, 4); % 13 == ^
 	% Using this index number instead of ptb_findaudiodevice() because the
 	% spaces in the name 'US-122 MKII / ...' were throwing errors.
-	pahandle = PsychPortAudio('Open', [4], [], 2, Sf, 2); 
+% 	pahandle = PsychPortAudio('Open', [4], [], 2, Sf, 2); 
 	%%% ^ This is just to test if I can hear it on headphones plugged into
 	% the laptop. Didn't work: I think it needs all 4 channels later in the
 	% script.
@@ -46,8 +46,8 @@ try
 	white   = WhiteIndex(screenNumber);              % get white given the screen used
 	
 	% play once something to get the time stamps right later
-% 	PsychPortAudio('FillBuffer',pahandle,[0;0;0;0]);
-	PsychPortAudio('FillBuffer',pahandle,[0;0]);
+	PsychPortAudio('FillBuffer',pahandle,[0;0;0;0]);
+% 	PsychPortAudio('FillBuffer',pahandle,[0;0]);
 	% This ^ is for testing on computer without the sound card.
 	initialTime = PsychPortAudio('Start',pahandle,1,0,1);
 	
@@ -100,7 +100,7 @@ try
 			
 			%%%  Only for testing on laptop %%% Remove following line when
 			%%%  using sound card.
-			y = y(1:2,:);
+% 			y = y(1:2,:);
 			
 			PsychPortAudio('FillBuffer',pahandle,y * db2ratio(dBSPL));
 			times(ii) = PsychPortAudio('Start',pahandle,1,onsets(ii),1);
