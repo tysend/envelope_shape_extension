@@ -37,6 +37,12 @@ t = 0:1/Sf:dur-1/Sf;
 % get complex signal
 C = sum(sin(pi*2 * repmat(Cfs,[1 length(t)]).*repmat(t,[N 1]) + repmat(phis,[1 length(t)])));
 
+% h  = fdesign.lowpass(2000, 2500, 1, 80, Sf);
+% Hd = design(h, 'butter', 'MatchExactly', 'stopband');
+% C = randn([round(Sf*dur) 1]);
+% fy = filtfilt(Hd.sosMatrix,Hd.ScaleValues,[flipud(C);C;flipud(C)]);
+% C = fy(length(C)+1:length(C)*2)';
+
 % get envelope parameters
 period = 1/Mf;             % period
 nEReps = fix(dur/period);  % repetitions

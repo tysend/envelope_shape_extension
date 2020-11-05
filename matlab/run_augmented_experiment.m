@@ -5,28 +5,24 @@ try
 	fs = filesep;
 	
 	% set stimulation parameters
-	Sf     = 44100;
-	SOA    = 5.121; % stimulus onset asynchrony
-	dBSPL  = -10; % corresponding to XX dB SPL
-	N      = 25; % Number of ramps and damps per block
-	% 25 ramp + 25 ramp = 50/block * 6 blocks = 300 trials total, 150 per
-	% condition
-	
+	nAudioChans = 3;
+	Sf       = 44100;
+	SOA      = 11.102; % stimulus onset asynchrony in s
+	durSound = 9.5;   % sound duration in s
+	durRF    = 3.8;
+	dBSPL    = -35; % corresponding to XX dB SPL
+	dbrelMin = -60;
+	N        = 56; % Number of ramps and damps per block (N/2 per condition)
+	nBlocks  = 5;
+	fR       = [800 2200];
+	nComps   = 100;
+
 	% initial params
 	PsychDefaultSetup(2);
 	InitializePsychSound;
-	% pahandle = PsychPortAudio('Open',ptb_findaudiodevice('ASIO Focusrite'),[],2,Sf,4);
-	% pahandle = PsychPortAudio('Open',ptb_findaudiodevice('TASCAM US-144 MKII'),[],2,Sf,4);
-	% pahandle = PsychPortAudio('Open',[],[],2,Sf,4);
-	% pahandle = PsychPortAudio('Open', ptb_findaudiodevice('US-122 MKII / US-144 MKII'), [], 2, Sf, 4);_
-	pahandle = PsychPortAudio('Open', 13, [], 2, Sf, 4); % 13 == ^
-	% Using this index number instead of ptb_findaudiodevice() because the
-	% spaces in the name 'US-122 MKII / ...' were throwing errors.
-% 	pahandle = PsychPortAudio('Open', [4], [], 2, Sf, 2); 
-	%%% ^ This is just to test if I can hear it on headphones plugged into
-	% the laptop. Didn't work: I think it needs all 4 channels later in the
-	% script.
-
+	%pahandle = PsychPortAudio('Open', ptb_findaudiodevice('US-122 MKII / US-144 MKII'), [], 2, Sf, nAudioChans);_
+	pahandle = PsychPortAudio('Open', ptb_findaudiodevice('ASIO Fireface USB'), [], 2, Sf, nAudioChans); % 13 == ^
+	
 	
 	KbName('UnifyKeyNames');
 	keysOfInterest = zeros(1,256);
@@ -46,12 +42,10 @@ try
 	white   = WhiteIndex(screenNumber);              % get white given the screen used
 	
 	% play once something to get the time stamps right later
-	PsychPortAudio('FillBuffer',pahandle,[0;0;0;0]);
-% 	PsychPortAudio('FillBuffer',pahandle,[0;0]);
-	% This ^ is for testing on computer without the sound card.
+	PsychPortAudio('FillBuffer',pahandle,zeros([nAudioChans 1]));
 	initialTime = PsychPortAudio('Start',pahandle,1,0,1);
 	
-	bgcolor = 0;                                     % background color 0-255
+	bgcolor  = 0;                                     % background color 0-255
 	txtcolor = round(white*0.8);                     % text color 0-255
 	[shandle, ~] = PsychImaging('OpenWindow', screenNumber, bgcolor); % open window
 	
@@ -62,11 +56,12 @@ try
 	HideCursor;
 	
 	% generate randomization
-	seq = generate_sequence(subjID, N);
+	rng(str2double(subjID([3 4]))*201)
+	seq = generate_sequence(N,nBlocks);
 	
-	for b = startBlock : length(seq)
+	for b = startBlock : nBlocks
 		% Draw beginning-of-block screen
-		DrawFormattedText(shandle, ['Start block ' num2str(b) '/' num2str(length(seq)) ' by pressing a button!'], 'center', 'center', txtcolor);
+		DrawFormattedText(shandle, ['Start block ' num2str(b) '/' num2str(nBlocks) ' by pressing a button!'], 'center', 'center', txtcolor);
 		Screen('Flip', shandle);
 		keyIsDown = KbCheck;
 		while ~keyIsDown, keyIsDown = KbCheck; end
@@ -76,48 +71,47 @@ try
 		
 		% get onsets for sound stimulation
 		currentTime = GetSecs;
-		onsets = currentTime + 2 + (0:SOA:(size(seq(b).info,2)*SOA-SOA));
+		onsets = currentTime + 2 + (0:SOA:(size(seq,2)*SOA-SOA));
 		
 		% do sound stimulation
 		times = [];
-		for ii = 1 : size(seq(b).info,2)
-			if seq(b).info(1,ii) == 0
+		for ii = 1 : size(seq,2)
+			if seq(b,ii) == 0
 				type = 'damped';
 			else
 				type = 'ramped';
 			end
 			
-			% Unlike original experiment, we are using only the high
-			% frequency range.
-			fR = [1800 3600];
+			% generate sound
+			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.
+			);
+			y = wav_risefall(y, [0.01 0.01], Sf, 'lin');
+			magMod = risefall(dBSPL,dbrelMin,Sf,durRF,length(y));
+			y = y .* magMod';
+			if nAudioChans == 2
+				y = [y'; y'];
+			elseif nAudioChans == 3
+				y = [y'; y'; zeros([1 length(y)])];
+				y(3,1:round(Sf*0.01)) = 1;
+			else
+				error('Not cool! Wrong number of audio channels.')
+			end
 			
-			[y, t] = generate_complex_envel(Sf,10,fR,100,4,type,1.15);
-			[y, w] = wav_risefall(y, [4.5 4.5], Sf, 'db'); % ? Why does this also return a logical? What's being tested here?
-			y = y';
-			y(2,:)   = y;
-			y(3:4,:) = 0;
-			y(3:4,1:round(Sf*0.01)) = 1;
-			
-			%%%  Only for testing on laptop %%% Remove following line when
-			%%%  using sound card.
-% 			y = y(1:2,:);
-			
-			PsychPortAudio('FillBuffer',pahandle,y * db2ratio(dBSPL));
+			PsychPortAudio('FillBuffer',pahandle,y);
 			times(ii) = PsychPortAudio('Start',pahandle,1,onsets(ii),1);
 			
 			[~,keyEvents] = KbQueueCheck;
 			if keyEvents(logical(keysOfInterest))>0
 				error('Program stopped by user!!!')
 			end
-			% WaitSecs(size(y)/Sf+0.01);
-			% This ^ was throwing an error: I think because size() does not return single number. Could be fixed. I'm temporarily replacing it with:
-			WaitSecs(10.01);
-			% This needs to be slightly longer than the stimulus.
+			
+			% wait briefly, otherwise weird sound overlap happens
+			WaitSecs(length(y)/Sf+0.01);
 		end
 		events       = [];
 		events.ons   = onsets;
 		events.times = times;
-		events.info  = seq(b).info;
+		events.info  = seq(b,:);
 		
 		% save times and triggers
 		save(['logs' fs subjID num2str(b) '.mat'],'-struct','events')

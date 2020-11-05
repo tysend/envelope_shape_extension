@@ -51,7 +51,7 @@ dsound = sound .* m_des';
 PsychDefaultSetup(2);
 InitializePsychSound;
 % pahandle = PsychPortAudio('Open',findaudiodevice('Yamaha Steinberg USB ASIO'),[],0,Sf,2);
-pahandle = PsychPortAudio('Open',findaudiodevice('TASCAM US-144 MKII'),[],0,Sf,2);
+pahandle = PsychPortAudio('Open',findaudiodevice('ASIO Fireface USB'),[],0,Sf,2);
 
 
 KbName('UnifyKeyNames');
