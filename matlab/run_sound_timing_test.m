@@ -52,7 +52,7 @@ try
 
     % do sound stimulation
 	stim = stim * db2mag(dBLev);
-    stim(3,1:round(Sf*0.01)) = 1;
+    stim(3,1:round(Sf*0.01)) = 0.1;
 	PsychPortAudio('FillBuffer',pahandle,stim);
 	[times] = deal(zeros([1 nRep]));
     for ii = 1 : nRep
