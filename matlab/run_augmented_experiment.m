@@ -83,8 +83,7 @@ try
 			end
 			
 			% generate sound
-			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.
-			);
+			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.15); % Just put in 1.5 but the .5 was missing this morning
 			y = wav_risefall(y, [0.01 0.01], Sf, 'lin');
 			magMod = risefall(dBSPL,dbrelMin,Sf,durRF,length(y));
 			y = y .* magMod';
