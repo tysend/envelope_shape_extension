@@ -83,7 +83,7 @@ try
 			end
 			
 			% generate sound
-			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.25); % Just put in 1.5 but the .5 was missing this morning
+			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.15); 
 			y = wav_risefall(y, [0.01 0.01], Sf, 'lin');
 			magMod = risefall(dBSPL,dbrelMin,Sf,durRF,length(y));
 			y = y .* magMod';
@@ -91,7 +91,7 @@ try
 				y = [y'; y'];
 			elseif nAudioChans == 3
 				y = [y'; y'; zeros([1 length(y)])];
-				y(3,1:round(Sf*0.01)) = 1;
+				y(3,1:round(Sf*0.1)) = 1;
 			else
 				error('Not cool! Wrong number of audio channels.')
 			end

@@ -62,6 +62,13 @@ end
 
 % get modulated signal
 y = C .* envelope;
+
+% h  = fdesign.lowpass(fR(2), fR(2)*1.1, 1, 80, Sf);
+% Hd = design(h, 'butter', 'MatchExactly', 'stopband');
+% fy = filtfilt(Hd.sosMatrix,Hd.ScaleValues,[flipud(y');y';flipud(y')]);
+% fy = fy(length(y)+1:length(y)*2)';
+% 
+% y = fy / max(abs(fy)); % normalize to max 1
 y = y / max(abs(y)); % normalize to max 1
 
 

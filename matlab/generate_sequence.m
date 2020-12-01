@@ -5,7 +5,7 @@ function seq = generate_sequence(N,nBlocks)
 % N - number of trials per condition per block
 
 y = [0 1];
-y = repmat(y,[1, N]);
+y = repmat(y,[1, N/2]);
 
 seq = [];
 for b = 1 : nBlocks
