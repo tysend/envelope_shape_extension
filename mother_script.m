@@ -18,15 +18,16 @@ run_SensationLevel(subjID)
              
 
  
-%% AM presentation
+%% AM presentation (main experiment, blocks 1-5)
 run_augmented_experiment(subjID,startBl);
 
 
-%% ABR
+%% ABR (block 0)
 run_experiment_abr(subjID);
+% Still need to test this ^ (2021.01.07)
 
 
-%% burst presentation
+%% burst presentation (== onset response, block 6)
 run_augmented_experiment_bursts(subjID)
 % for testing onset responses
 
