@@ -1,3 +1,5 @@
+% First run the opening cell of mother_script.m
+
 clear all
 format compact
 
