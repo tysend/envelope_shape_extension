@@ -73,21 +73,17 @@ try
 	for ii = 1 : nTrials
 		% generate sound
 		y = generate_complex_burst(Sf,durSound,fR,nComps);
-		y = wav_risefall(y, [0.005 0.005], Sf, 'lin');
+		y = wav_risefall(y, [0.005 0.005], Sf, 'lin') * db2mag(dBSPL);
 		if nAudioChans == 2
 			y = [y'; y'];
 		elseif nAudioChans == 3
 			y = [y'; y'; zeros([1 length(y)])];
-			y(3,1:round(Sf*0.1)) = 1; 
-			% This ^ is the only difference with triggers in the
-			% run_augmented_experiment script. There it is 0.1. I changed
-			% this from 0.01 to 0.1 on 2021.01.12 before running trigger
-			% test.
+			y(3,1:round(Sf*0.01)) = 1; 
 		else
 			error('Not cool! Wrong number of audio channels.')
 		end
 			
-		PsychPortAudio('FillBuffer',pahandle,y * db2mag(dBSPL));
+		PsychPortAudio('FillBuffer',pahandle,y);
 		times(ii) = PsychPortAudio('Start',pahandle,1,onsets(ii),1);
 
 		[~,keyEvents] = KbQueueCheck;

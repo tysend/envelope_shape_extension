@@ -24,7 +24,6 @@ run_augmented_experiment(subjID,startBl);
 
 %% ABR (block 0)
 run_experiment_abr(subjID);
-% Still need to test this ^ (2021.01.07)
 
 
 %% burst presentation (== onset response, block 6)

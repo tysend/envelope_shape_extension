@@ -60,9 +60,9 @@ try
 
 	% generate sound
 	y = ones([1 round(dur * Sf)]);
-	y = [y; y] * db2mag(dBSPL);
+	y = [y; y];
 	if nAudioChans == 3
-		samptrig = round(Sf*0.01);
+		samptrig = round(Sf*0.1); % This was 0.01, I changed it to 0.1 on 2021.01.12 before trigger test.
 		y = [y; zeros([1 length(y)])];
 		y = [y zeros([3 samptrig-length(y)])];
 		y(3,1:samptrig) = 1;
@@ -71,7 +71,7 @@ try
 	end
 	
 	% buffer sound
-	PsychPortAudio('FillBuffer',pahandle,y);
+	PsychPortAudio('FillBuffer',pahandle,y * db2mag(dBSPL));
 	
 	% get onsets for sound stimulation
 	currentTime = GetSecs;

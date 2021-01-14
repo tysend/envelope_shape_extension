@@ -1,20 +1,23 @@
-function run_experiment_abr(subjID)
-% run_experiment_abr(subjID)
-
+function run_augmented_experiment_bursts(subjID)
+% 2020.09.25
+% Changed to be an extension of Vanessa's project.
 try
 	fs = filesep;
 	
 	% set stimulation parameters
 	nAudioChans = 3;
-	Sf          = 44100;
-	SOA         = 1/11.3;   % stimulus onset asynchrony in s
-	dur         = 0.0001;   % sound duration in s
-	dBSPL       = -35;      % corresponding to XX dB SPL
-	nTrials     = 4000;
+	Sf       = 44100;
+	SOA      = 1.5; % stimulus onset asynchrony in s
+	durSound = 0.5;   % sound duration in s
+	dBSPL    = -35; % corresponding to XX dB SPL
+	fR       = [800 2200];
+	nComps   = 100;
+	nTrials  = 200;
 
 	% initial params
 	PsychDefaultSetup(2);
 	InitializePsychSound;
+	%pahandle = PsychPortAudio('Open', ptb_findaudiodevice('US-122 MKII / US-144 MKII'), [], 2, Sf, nAudioChans);_
 	pahandle = PsychPortAudio('Open', ptb_findaudiodevice('ASIO Fireface USB'), [], 2, Sf, nAudioChans); % 13 == ^
 	
 	
@@ -48,9 +51,12 @@ try
 	Screen('TextSize', shandle, 22);
 	Screen('TextStyle', shandle, 1);
 	HideCursor;
-		
+	
+	% generate randomization
+	rng(str2double(subjID([3 4]))*5858)
+	
 	% Draw beginning-of-block screen
-	DrawFormattedText(shandle, ['ABR stimulation\n\n\nStart block by pressing a button!'], 'center', 'center', txtcolor);
+	DrawFormattedText(shandle, ['Start block by pressing a button!'], 'center', 'center', txtcolor);
 	Screen('Flip', shandle);
 	keyIsDown = KbCheck;
 	while ~keyIsDown, keyIsDown = KbCheck; end
@@ -58,28 +64,30 @@ try
 	Screen('Flip', shandle);
 	WaitSecs(5);
 
-	% generate sound
-	y = ones([1 round(dur * Sf)]);
-	y = [y; y] * db2mag(dBSPL);
-	if nAudioChans == 3
-		samptrig = round(Sf*0.01);
-		y = [y; zeros([1 length(y)])];
-		y = [y zeros([3 samptrig-length(y)])];
-		y(3,1:samptrig) = 1;
-	elseif nAudioChans > 3
-		error('Not cool! Wrong number of audio channels.')
-	end
-	
-	% buffer sound
-	PsychPortAudio('FillBuffer',pahandle,y);
-	
 	% get onsets for sound stimulation
 	currentTime = GetSecs;
 	onsets = currentTime + 2 + (0:SOA:(nTrials*SOA-SOA));
 		
 	% do sound stimulation
-	times = NaN(size(onsets));
+	times = [];
 	for ii = 1 : nTrials
+		% generate sound
+		y = generate_complex_burst(Sf,durSound,fR,nComps);
+		y = wav_risefall(y, [0.005 0.005], Sf, 'lin');
+		if nAudioChans == 2
+			y = [y'; y'];
+		elseif nAudioChans == 3
+			y = [y'; y'; zeros([1 length(y)])];
+			y(3,1:round(Sf*0.1)) = 1; 
+			% This ^ is the only difference with triggers in the
+			% run_augmented_experiment script. There it is 0.1. I changed
+			% this from 0.01 to 0.1 on 2021.01.12 before running trigger
+			% test.
+		else
+			error('Not cool! Wrong number of audio channels.')
+		end
+			
+		PsychPortAudio('FillBuffer',pahandle,y * db2mag(dBSPL));
 		times(ii) = PsychPortAudio('Start',pahandle,1,onsets(ii),1);
 
 		[~,keyEvents] = KbQueueCheck;
@@ -88,17 +96,17 @@ try
 		end
 
 		% wait briefly, otherwise weird sound overlap happens
-		WaitSecs(length(y)/Sf+0.002);
+		WaitSecs(length(y)/Sf+0.01);
 	end
 	events       = [];
 	events.ons   = onsets;
 	events.times = times;
 	
 	% save times and triggers
-	save(['logs' fs subjID '_abr.mat'],'-struct','events')
+	save(['logs' fs subjID '0.mat'],'-struct','events')
 		
 	% Draw end-of-block screen
-	DrawFormattedText(shandle, 'End of ABR block: Press a button!', 'center', 'center', txtcolor);
+	DrawFormattedText(shandle, 'End of block: Press a button!', 'center', 'center', txtcolor);
 	Screen('Flip', shandle);
 	keyIsDown = KbCheck;
 	while ~keyIsDown, keyIsDown = KbCheck; end
@@ -109,9 +117,17 @@ try
 	sca;
 	PsychPortAudio('Close', pahandle);
 	KbQueueStop;
+	% 	IOPort('Close',portHandle)
+% 	IOPort('CloseAll');
+	% Not sure exactly what this does or how it's different from the line above, but
+	% the line above it was throwing an error. See also below.
 catch
 	sca;
 	PsychPortAudio('Close', pahandle);
 	KbQueueStop;
+	%  	IOPort('Close',portHandle)
+% 	IOPort('CloseAll');
 	rethrow(lasterror);
 end
+
+
