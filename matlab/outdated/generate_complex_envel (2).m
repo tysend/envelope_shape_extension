@@ -26,17 +26,16 @@ function [y t] = generate_complex_envel(Sf,dur,fR,N,Mf,type,param)
 % B. Herrmann, Email: herrmann.b@gmail.com, 2018-10-24
 
 % get random carrier frequencies
-%Cfs = rand([N 1])*diff(fR)+fR(1);
+Cfs = rand([N 1])*diff(fR)+fR(1);
 
 % get random phases
-%phis = rand([N 1])*2*pi-pi;
+phis = rand([N 1])*2*pi-pi;
 
 % time vector
 t = 0:1/Sf:dur-1/Sf;
 
 % get complex signal
-%C = sum(sin(pi*2 * repmat(Cfs,[1 length(t)]).*repmat(t,[N 1]) + repmat(phis,[1 length(t)])));
-C = rand([1 length(t)])*2-1;
+C = sum(sin(pi*2 * repmat(Cfs,[1 length(t)]).*repmat(t,[N 1]) + repmat(phis,[1 length(t)])));
 
 % h  = fdesign.lowpass(2000, 2500, 1, 80, Sf);
 % Hd = design(h, 'butter', 'MatchExactly', 'stopband');

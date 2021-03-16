@@ -9,7 +9,7 @@ try
 	Sf          = 44100;
 	SOA         = 1/11.3;   % stimulus onset asynchrony in s
 	dur         = 0.0001;   % sound duration in s
-	dBSPL       = -35;      % corresponding to XX dB SPL
+	dBSPL       = -25;      % corresponding to XX dB SPL ORIGINAL -35. At -30 a soft harmonic was audible
 	nTrials     = 4000;
 
 	% initial params

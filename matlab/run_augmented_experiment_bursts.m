@@ -7,9 +7,9 @@ try
 	% set stimulation parameters
 	nAudioChans = 3;
 	Sf       = 44100;
-	SOA      = 1.5; % stimulus onset asynchrony in s
-	durSound = 0.5;   % sound duration in s
-	dBSPL    = -35; % corresponding to XX dB SPL
+	SOA      = 1.2; % stimulus onset asynchrony in s 1.5
+	durSound = 0.2;   % sound duration in s
+	dBSPL    = -40; % corresponding to XX dB SPL -35 -55 got us around 73dB
 	fR       = [800 2200];
 	nComps   = 100;
 	nTrials  = 200;

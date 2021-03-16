@@ -10,7 +10,9 @@ try
 	SOA      = 11.102; % stimulus onset asynchrony in s
 	durSound = 9.5;   % sound duration in s
 	durRF    = 3.8;
-	dBSPL    = -35; % corresponding to XX dB SPL
+	dBSPL    = -43; 
+	% Initial stimuli: corresponding to XX dB SPL At -35 it gets up to 90dB. -40 got us 82dB max. Clicking/tapping still there...
+	% Updated, non-clicky version: -43 got us ~86 dB SPL(A) for max reading. Seemed comfortable enough. 
 	dbrelMin = -60;
 	N        = 56; % Number of ramps and damps per block (N/2 per condition)
 	nBlocks  = 5;
@@ -70,7 +72,7 @@ try
 		WaitSecs(5);
 		
 		% get onsets for sound stimulation
-		currentTime = GetSecs;
+		currentTime = GetSecs; % Returns the current time in seconds
 		onsets = currentTime + 2 + (0:SOA:(size(seq,2)*SOA-SOA));
 		
 		% do sound stimulation
@@ -83,7 +85,8 @@ try
 			end
 			
 			% generate sound
-			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.15); 
+			y = generate_complex_envel(Sf,durSound,fR,nComps,4,type,1.15); % Added t for use in next line. 
+% 			y = (rand(size(t))*2-1).*y; % From RocketChat: double check with BH.
 			y = wav_risefall(y, [0.01 0.01], Sf, 'lin');
 			magMod = risefall(dBSPL,dbrelMin,Sf,durRF,length(y));
 			y = y .* magMod';
@@ -97,7 +100,7 @@ try
 			end
 			
 			PsychPortAudio('FillBuffer',pahandle,y);
-			times(ii) = PsychPortAudio('Start',pahandle,1,onsets(ii),1);
+			times(ii) = PsychPortAudio('Start',pahandle,1,onsets(ii),1); % startTime = PsychPortAudio('Start', pahandle [, repetitions=1] [, when=0] [, waitForStart=0] [, stopTime=inf] [, resume=0]);
 			
 			[~,keyEvents] = KbQueueCheck;
 			if keyEvents(logical(keysOfInterest))>0
