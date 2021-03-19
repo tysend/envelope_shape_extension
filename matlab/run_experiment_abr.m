@@ -95,7 +95,7 @@ try
 	events.times = times;
 	
 	% save times and triggers
-	save(['logs' fs subjID '_abr.mat'],'-struct','events')
+	save(['logs' fs subjID '7.mat'],'-struct','events')
 		
 	% Draw end-of-block screen
 	DrawFormattedText(shandle, 'End of ABR block: Press a button!', 'center', 'center', txtcolor);

@@ -99,7 +99,7 @@ try
 	events.times = times;
 	
 	% save times and triggers
-	save(['logs' fs subjID '0.mat'],'-struct','events')
+	save(['logs' fs subjID '6.mat'],'-struct','events')
 		
 	% Draw end-of-block screen
 	DrawFormattedText(shandle, 'End of block: Press a button!', 'center', 'center', txtcolor);
